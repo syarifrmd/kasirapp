@@ -118,7 +118,8 @@ class BarangController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kategori' => 'required|in:RK,MN,SB,SK,OB,EK',
+            'kategori' => 'required|string|size:2|regex:/^[A-Z]{2}$/',
+            'kategori_nama' => 'nullable|string|max:50',
             'merk' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'varians' => 'required|array|min:1',
@@ -233,7 +234,8 @@ class BarangController extends Controller
     public function update(Request $request, Barang $barang)
     {
         $data = $request->validate([
-            'kategori' => 'required|in:RK,MN,SB,SK,OB,EK',
+            'kategori' => 'required|string|size:2|regex:/^[A-Z]{2}$/',
+            'kategori_nama' => 'nullable|string|max:50',
             'merk' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'varians' => 'required|array|min:1',

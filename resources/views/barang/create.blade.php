@@ -4,18 +4,49 @@
 <h1 class="text-xl font-semibold mb-4">Tambah Barang</h1>
 <form action="{{ route('barang.store') }}" method="POST" class="space-y-4 bg-white p-6 rounded shadow max-w-3xl" x-data="barangForm()">
     @csrf
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <label class="block text-sm font-medium mb-1">Kategori</label>
-            <select name="kategori" class="w-full border rounded px-3 py-2 text-sm" required>
-                @foreach(\App\Models\Barang::KATEGORI as $k => $label)
-                    <option value="{{ $k }}" {{ old('kategori') == $k ? 'selected' : '' }}>{{ $label }} ({{ $k }})</option>
-                @endforeach
-            </select>
+    <!-- Pilih Kategori -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <h3 class="font-semibold text-blue-900 mb-3">Pilih Kategori</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Kategori</label>
+                <select name="kategori" x-model="selectedKategori" @change="kategoriChanged()" class="w-full border rounded px-3 py-2 text-sm" required>
+                    @foreach(\App\Models\Barang::KATEGORI as $k => $label)
+                        <option value="{{ $k }}" {{ old('kategori') == $k ? 'selected' : '' }}>{{ $label }} ({{ $k }})</option>
+                    @endforeach
+                    <option value="CUSTOM">Buat Kategori Baru</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Nama Merk Barang</label>
+                <input type="text" name="merk" value="{{ old('merk') }}" class="w-full border rounded px-3 py-2 text-sm" required placeholder="Contoh: Aqua, Indomie">
+            </div>
         </div>
-        <div>
-            <label class="block text-sm font-medium mb-1">Nama Merk Barang</label>
-            <input type="text" name="merk" value="{{ old('merk') }}" class="w-full border rounded px-3 py-2 text-sm" required placeholder="Contoh: Aqua, Indomie">
+    </div>
+    
+    <!-- Form Kategori Baru (tampil jika pilih CUSTOM) -->
+    <div x-show="selectedKategori === 'CUSTOM'" x-transition class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+        <h3 class="font-semibold text-green-900 mb-3">Buat Kategori Baru</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1 text-green-900">Kode Kategori <span class="text-red-500">*</span></label>
+                <input type="text" name="kategori" x-model="customKategoriCode" placeholder="Masukkan 2 huruf kapital, misal: PR" maxlength="2" pattern="[A-Z]{2}" class="w-full border-2 border-green-300 rounded px-3 py-2 text-sm font-mono uppercase focus:border-green-500 focus:ring-2 focus:ring-green-200" :required="selectedKategori === 'CUSTOM'">
+                <p class="text-xs text-gray-600 mt-1">Hanya 2 huruf kapital (A-Z)</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 text-green-900">Nama Kategori <span class="text-gray-400">(opsional)</span></label>
+                <input type="text" name="kategori_nama" x-model="customKategoriNama" placeholder="Contoh: Perlengkapan" class="w-full border-2 border-green-300 rounded px-3 py-2 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200">
+                <p class="text-xs text-gray-600 mt-1">Untuk keterangan saja</p>
+            </div>
+        </div>
+        <div class="mt-3 bg-white border border-green-200 rounded p-3">
+            <p class="text-xs font-semibold text-green-900 mb-1">Contoh Kategori Baru:</p>
+            <ul class="text-xs text-gray-700 space-y-1">
+                <li>• <span class="font-mono font-bold">PR</span> - Perlengkapan Rumah</li>
+                <li>• <span class="font-mono font-bold">AP</span> - Alat Pertanian</li>
+                <li>• <span class="font-mono font-bold">KS</span> - Kosmetik</li>
+                <li>• <span class="font-mono font-bold">EL</span> - Elektronik</li>
+            </ul>
         </div>
     </div>
     <div>
@@ -140,7 +171,16 @@
 function barangForm() {
     return {
         init_stock: false,
+        selectedKategori: '{{ old("kategori", "RK") }}',
+        customKategoriCode: '',
+        customKategoriNama: '',
         varians: [{jenis: '', kode_jenis: '01', kode_kemasan: '01', ukuran_kemasan: '', harga_barang: 0, stok_barang: 0, manual_kode: false, kode_barang_manual: ''}],
+        kategoriChanged() {
+            if (this.selectedKategori !== 'CUSTOM') {
+                this.customKategoriCode = '';
+                this.customKategoriNama = '';
+            }
+        },
         addVarian() {
             // Find max kode_jenis and kode_kemasan for auto increment
             let maxJenis = 0;
